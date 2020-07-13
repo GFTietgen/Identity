@@ -57,7 +57,7 @@ namespace WebApp.Identity.Controllers
 
                 if (user == null)
                 {
-                    user = new MyUser()
+                    user = new MyUser
                     {
                         Id = Guid.NewGuid().ToString(),
                         UserName = viewModel.UserName
