@@ -10,7 +10,7 @@ using WebApp.Identity;
 namespace WebApp.Identity.Migrations
 {
     [DbContext(typeof(MyUserDbContext))]
-    [Migration("20200712234239_Initial")]
+    [Migration("20200725163450_Initial")]
     partial class Initial
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -152,11 +152,15 @@ namespace WebApp.Identity.Migrations
 
                     b.Property<DateTimeOffset?>("LockoutEnd");
 
+                    b.Property<string>("Member");
+
                     b.Property<string>("NormalizedEmail")
                         .HasMaxLength(256);
 
                     b.Property<string>("NormalizedUserName")
                         .HasMaxLength(256);
+
+                    b.Property<string>("OrganizationId");
 
                     b.Property<string>("PasswordHash");
 
@@ -181,7 +185,21 @@ namespace WebApp.Identity.Migrations
                         .HasName("UserNameIndex")
                         .HasFilter("[NormalizedUserName] IS NOT NULL");
 
+                    b.HasIndex("OrganizationId");
+
                     b.ToTable("AspNetUsers");
+                });
+
+            modelBuilder.Entity("WebApp.Identity.Organization", b =>
+                {
+                    b.Property<string>("Id")
+                        .ValueGeneratedOnAdd();
+
+                    b.Property<string>("Name");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Organizations");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -227,6 +245,13 @@ namespace WebApp.Identity.Migrations
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade);
+                });
+
+            modelBuilder.Entity("WebApp.Identity.MyUser", b =>
+                {
+                    b.HasOne("WebApp.Identity.Organization")
+                        .WithMany()
+                        .HasForeignKey("OrganizationId");
                 });
 #pragma warning restore 612, 618
         }
