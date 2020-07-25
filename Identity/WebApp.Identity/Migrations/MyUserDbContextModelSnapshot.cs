@@ -150,6 +150,8 @@ namespace WebApp.Identity.Migrations
 
                     b.Property<DateTimeOffset?>("LockoutEnd");
 
+                    b.Property<string>("Member");
+
                     b.Property<string>("NormalizedEmail")
                         .HasMaxLength(256);
 
