@@ -1,0 +1,22 @@
+﻿@model EsqueciSenhaModel
+
+@{
+    ViewData["Title"] = "EsqueciSenha";
+}
+
+<div class="row">
+    <div class="col-lg-12">
+        <h1 class="text-center">Esqueci a senha</h1>
+        <hr />
+        <form asp-action="ForgotPassword" method="post" class="form-horizontal">
+            <div class="form-group row">
+                <label asp-for="Email" class="col-lg-2"></label>
+                <div class="col-lg-10">
+                    <input asp-for="Email" class="form-control" />
+                </div>
+            </div>
+            <button type="submit" class="btn btn-primary">Enviar</button>
+            <div asp-validation-summary="All"></div>
+        </form>
+    </div>
+</div>
