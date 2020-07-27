@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using WebApp.Identity.Models;
 
 namespace WebApp.Identity.Controllers
@@ -73,6 +74,15 @@ namespace WebApp.Identity.Controllers
 
                         System.IO.File.WriteAllText("confirmationEmail.txt", confirmationEmail);
                     }
+                    else
+                    {
+                        foreach (var error in result.Errors)
+                        {
+                            ModelState.AddModelError("", error.Description);
+                        }
+
+                        return View();
+                    }
                 }
 
                 return View("Success");
@@ -94,19 +104,33 @@ namespace WebApp.Identity.Controllers
             {
                 var user = await _userManager.FindByNameAsync(viewModel.UserName);
 
-                if (user != null && await _userManager.CheckPasswordAsync(user, viewModel.Password))
+                if (user != null && !await _userManager.IsLockedOutAsync(user))
                 {
-                    if (!await _userManager.IsEmailConfirmedAsync(user))
+                    if (await _userManager.CheckPasswordAsync(user, viewModel.Password))
                     {
-                        ModelState.AddModelError("", "E-mail não está válido");
-                        return View();
+                        if (!await _userManager.IsEmailConfirmedAsync(user))
+                        {
+                            ModelState.AddModelError("", "E-mail não está válido");
+                            return View();
+                        }
+
+                        await _userManager.ResetAccessFailedCountAsync(user);
+
+                        var principal = await _userClaimsPrincipalFactory.CreateAsync(user);
+
+                        await HttpContext.SignInAsync("Identity.Application", principal);
+
+                        return RedirectToAction("About");
+                    }
+
+                    await _userManager.AccessFailedAsync(user);
+
+                    if(await _userManager.IsLockedOutAsync(user))
+                    {
+                        //Email deve ser enviado sugirindo mudança de senha
+
                     }
                     
-                    var principal = await _userClaimsPrincipalFactory.CreateAsync(user);
-
-                    await HttpContext.SignInAsync("Identity.Application", principal);
-
-                    return RedirectToAction("About");
                 }
 
                 ModelState.AddModelError("", "Usuário ou Senha inválido!!!");

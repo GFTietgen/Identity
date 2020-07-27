@@ -46,9 +46,21 @@ namespace WebApp.Identity
             services.AddIdentity<MyUser, IdentityRole>(options => 
             {
                 options.SignIn.RequireConfirmedEmail = true;
+
+                //Configurações descritivas para password
+                options.Password.RequireDigit = false;
+                options.Password.RequireNonAlphanumeric = false;
+                options.Password.RequireLowercase = false;
+                options.Password.RequireUppercase = false;
+                options.Password.RequiredLength = 4;
+
+                //Configurações descritivas contra ataques do tipo força bruta
+                options.Lockout.MaxFailedAccessAttempts = 3;
+                options.Lockout.AllowedForNewUsers = true;
             })
-                    .AddEntityFrameworkStores<MyUserDbContext>()
-                    .AddDefaultTokenProviders();
+            .AddEntityFrameworkStores<MyUserDbContext>()
+            .AddDefaultTokenProviders()
+            .AddPasswordValidator<DoesNotContainPasswordValidation<MyUser>>();
 
             services.Configure<DataProtectionTokenProviderOptions>(options => 
                     options.TokenLifespan = TimeSpan.FromHours(3)
