@@ -21,8 +21,4 @@
     <ProjectReference Include="..\WebAPI.Repository\WebAPI.Repository.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="DTO\" />
-  </ItemGroup>
-
 </Project>
