@@ -11,6 +11,8 @@ using System.Reflection;
 using WebAPI.Domiain;
 using WebAPI.Repository;
 using System.Text;
+using AutoMapper;
+using WebAPI.Identity.Helper;
 
 namespace WebAPI.Identity
 {
@@ -34,7 +36,7 @@ namespace WebAPI.Identity
                 ));
             services.AddIdentity<User, Role>(options =>
             {
-                options.SignIn.RequireConfirmedEmail = true;
+                //options.SignIn.RequireConfirmedEmail = true;
 
                 options.Password.RequireDigit = false;
                 options.Password.RequireNonAlphanumeric = false;
@@ -57,7 +59,8 @@ namespace WebAPI.Identity
                         options.TokenValidationParameters = new TokenValidationParameters
                         {
                             ValidateIssuerSigningKey = true,
-                            IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(Configuration.GetSection("AppSettings:Token").Value)),
+                            IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII
+                                .GetBytes(Configuration.GetSection("AppSettings:Token").Value)),
                             ValidateIssuer = false,
                             ValidateAudience = false
                         };
@@ -67,6 +70,15 @@ namespace WebAPI.Identity
                     .SetCompatibilityVersion(CompatibilityVersion.Version_2_2)
                     .AddJsonOptions(opt => opt.SerializerSettings.ReferenceLoopHandling =
                                     Newtonsoft.Json.ReferenceLoopHandling.Ignore);
+
+            var mappingConfig = new MapperConfiguration(mc =>
+            {
+                mc.AddProfile(new AutoMapperProfile());
+            });
+
+            IMapper mapper = mappingConfig.CreateMapper();
+
+            services.AddSingleton(mapper);
 
             services.AddCors();
         }
