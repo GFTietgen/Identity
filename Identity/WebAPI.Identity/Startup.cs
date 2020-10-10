@@ -13,6 +13,8 @@ using WebAPI.Repository;
 using System.Text;
 using AutoMapper;
 using WebAPI.Identity.Helper;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc.Authorization;
 
 namespace WebAPI.Identity
 {
@@ -34,7 +36,7 @@ namespace WebAPI.Identity
                 options => options.UseSqlServer(Configuration.GetConnectionString("default"),
                 sql => sql.MigrationsAssembly(migrationAssembly)
                 ));
-            services.AddIdentity<User, Role>(options =>
+            services.AddIdentityCore<User>(options =>
             {
                 //options.SignIn.RequireConfirmedEmail = true;
 
@@ -47,6 +49,7 @@ namespace WebAPI.Identity
                 options.Lockout.MaxFailedAccessAttempts = 3;
                 options.Lockout.AllowedForNewUsers = true;
             })
+            .AddRoles<Role>()
             .AddEntityFrameworkStores<Context>()
             .AddRoleValidator<RoleValidator<Role>>()
             .AddRoleManager<RoleManager<Role>>()
@@ -66,7 +69,13 @@ namespace WebAPI.Identity
                         };
                     });
 
-            services.AddMvc()
+            services.AddMvc(options => 
+                    {
+                        var policy = new AuthorizationPolicyBuilder()
+                            .RequireAuthenticatedUser()
+                            .Build();
+                        options.Filters.Add(new AuthorizeFilter(policy));
+                    })
                     .SetCompatibilityVersion(CompatibilityVersion.Version_2_2)
                     .AddJsonOptions(opt => opt.SerializerSettings.ReferenceLoopHandling =
                                     Newtonsoft.Json.ReferenceLoopHandling.Ignore);
@@ -90,6 +99,8 @@ namespace WebAPI.Identity
             {
                 app.UseDeveloperExceptionPage();
             }
+
+            app.UseAuthentication();
 
             app.UseCors(x => x.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader());
             app.UseMvc();
